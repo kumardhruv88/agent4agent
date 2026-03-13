@@ -6,9 +6,14 @@ from agent4target.orchestrator.workflow import run_pipeline
 
 app = typer.Typer(
     help="Agent4Target: Agent-based Evidence Aggregation Toolkit",
-    invoke_without_command=False,
+    no_args_is_help=True,
 )
 console = Console()
+
+@app.command("version")
+def version():
+    """Print the version of Agent4Target."""
+    console.print("Agent4Target v0.1.0")
 
 @app.command("run")
 def run(
