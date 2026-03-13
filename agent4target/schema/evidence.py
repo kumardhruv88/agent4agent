@@ -11,6 +11,7 @@ class EvidenceSource(str, Enum):
     PHAROS = "PHAROS"
     DEPMAP = "DEPMAP"
     OPEN_TARGETS = "OPEN_TARGETS"
+    LITERATURE = "LITERATURE"
 
 class RawEvidence(BaseModel):
     """Base schema for raw evidence collected from APIs"""
@@ -36,4 +37,8 @@ class ScoredTarget(BaseModel):
     aggregate_score: float = Field(..., description="Final target quality score (0-1)")
     unified_evidence: UnifiedEvidence
     explanation: str = Field(..., description="Structured string explaining the score based on evidence")
+    source_weights: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Weights used per source for this aggregation (for transparency)"
+    )
 

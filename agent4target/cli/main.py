@@ -4,10 +4,13 @@ from rich.console import Console
 
 from agent4target.orchestrator.workflow import run_pipeline
 
-app = typer.Typer(help="Agent4Target: Agent-based Evidence Aggregation Toolkit")
+app = typer.Typer(
+    help="Agent4Target: Agent-based Evidence Aggregation Toolkit",
+    invoke_without_command=False,
+)
 console = Console()
 
-@app.command()
+@app.command("run")
 def run(
     target: str = typer.Option(..., "--target", "-t", help="Gene symbol or target ID to evaluate"),
     output: str = typer.Option(None, "--output", "-o", help="Optional path to save JSON output")

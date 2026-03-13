@@ -18,6 +18,7 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
+agent4target.egg-info/
 .installed.cfg
 *.egg
 MANIFEST

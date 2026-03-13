@@ -1,3 +1,10 @@
+"""
+Workflow Orchestrator for Agent4Target.
+
+Uses LangGraph to implement a deterministic, inspectable state machine
+that coordinates all evidence collector agents, the normalization/scoring
+agent, and the explanation agent with full error handling.
+"""
 import operator
 from typing import Annotated, TypedDict, Sequence
 from langgraph.graph import StateGraph, START, END
@@ -7,11 +14,13 @@ from agent4target.agents import (
     PharosAgent,
     DepMapAgent,
     OpenTargetsAgent,
+    LiteratureAgent,
     NormalizationScoringAgent,
     ExplanationAgent
 )
 
-# 1. Define the State
+# ─── State Definition ────────────────────────────────────────────────────────
+
 class AgentState(TypedDict):
     target: TargetRequest
     raw_evidence: Annotated[Sequence[RawEvidence], operator.add]
@@ -19,92 +28,119 @@ class AgentState(TypedDict):
     scored_target: ScoredTarget | None
     errors: Annotated[Sequence[str], operator.add]
 
-# 2. Node Functions
+
+# ─── Node Functions (each is an isolated, inspectable unit) ──────────────────
+
 def fetch_pharos(state: AgentState):
+    """Node: Retrieve target development level from PHAROS GraphQL API."""
     try:
-        agent = PharosAgent()
-        evidence = agent.fetch_evidence(state["target"])
+        evidence = PharosAgent().fetch_evidence(state["target"])
         return {"raw_evidence": [evidence]}
     except Exception as e:
         return {"errors": [f"PHAROS Error: {str(e)}"]}
 
+
 def fetch_depmap(state: AgentState):
+    """Node: Retrieve genetic dependency data from DepMap."""
     try:
-        agent = DepMapAgent()
-        evidence = agent.fetch_evidence(state["target"])
+        evidence = DepMapAgent().fetch_evidence(state["target"])
         return {"raw_evidence": [evidence]}
     except Exception as e:
         return {"errors": [f"DepMap Error: {str(e)}"]}
 
+
 def fetch_open_targets(state: AgentState):
+    """Node: Retrieve disease association scores from Open Targets GraphQL API."""
     try:
-        agent = OpenTargetsAgent()
-        evidence = agent.fetch_evidence(state["target"])
+        evidence = OpenTargetsAgent().fetch_evidence(state["target"])
         return {"raw_evidence": [evidence]}
     except Exception as e:
         return {"errors": [f"Open Targets Error: {str(e)}"]}
 
+
+def fetch_literature(state: AgentState):
+    """Node: Retrieve literature evidence (publication count) from Europe PMC."""
+    try:
+        evidence = LiteratureAgent().fetch_evidence(state["target"])
+        return {"raw_evidence": [evidence]}
+    except Exception as e:
+        return {"errors": [f"Literature Error: {str(e)}"]}
+
+
 def normalize_and_score(state: AgentState):
-    agent = NormalizationScoringAgent()
+    """Node: Normalize all collected evidence and compute a weighted aggregate score."""
     try:
         if not state.get("raw_evidence"):
             return {"errors": ["No raw evidence collected to normalize."]}
-        
-        unified = agent.process(state["target"], state["raw_evidence"])
-        score = agent.compute_aggregate_score(unified)
-        
-        # We need to temporarily pass the score. We can store it on the unified evidence or state.
-        # Let's attach it to unified temporarily, but it's cleaner to pass it to Explainer.
+
+        agent = NormalizationScoringAgent()
+        unified = agent.process(state["target"], list(state["raw_evidence"]))
         return {"unified_evidence": unified}
     except Exception as e:
         return {"errors": [f"Scoring Error: {str(e)}"]}
 
+
 def explain_results(state: AgentState):
-    agent = ExplanationAgent()
-    scorer = NormalizationScoringAgent()
+    """Node: Generate a structured, deterministic explanation of the final score."""
     try:
-        unified = state["unified_evidence"]
+        unified = state.get("unified_evidence")
         if not unified:
             return {"errors": ["No unified evidence available to explain."]}
-        
+
+        scorer = NormalizationScoringAgent()
         score = scorer.compute_aggregate_score(unified)
-        scored_target = agent.generate_explanation(score, unified)
+        weights = scorer.get_active_weights(unified)
+
+        scored_target = ExplanationAgent().generate_explanation(score, unified, source_weights=weights)
         return {"scored_target": scored_target}
     except Exception as e:
         return {"errors": [f"Explanation Error: {str(e)}"]}
 
-# 3. Build the Graph
+
+# ─── Graph Assembly ───────────────────────────────────────────────────────────
+
 def build_workflow() -> StateGraph:
-    workflow = StateGraph(AgentState)
+    """
+    Builds and compiles the deterministic Agent4Target LangGraph state machine.
     
-    # Add nodes
+    Topology:
+      START → [pharos, depmap, open_targets, literature] → normalize → explain → END
+    
+    All four collector agents run in parallel before normalization begins.
+    """
+    workflow = StateGraph(AgentState)
+
+    # Register nodes
     workflow.add_node("pharos", fetch_pharos)
     workflow.add_node("depmap", fetch_depmap)
     workflow.add_node("open_targets", fetch_open_targets)
+    workflow.add_node("literature", fetch_literature)
     workflow.add_node("normalize", normalize_and_score)
     workflow.add_node("explain", explain_results)
-    
-    # Define edges
-    # Collectors run in parallel after START
+
+    # 4 collectors run in parallel from START
     workflow.add_edge(START, "pharos")
     workflow.add_edge(START, "depmap")
     workflow.add_edge(START, "open_targets")
-    
-    # Normalize waits for all collectors
+    workflow.add_edge(START, "literature")
+
+    # All collectors feed into normalize
     workflow.add_edge("pharos", "normalize")
     workflow.add_edge("depmap", "normalize")
     workflow.add_edge("open_targets", "normalize")
-    
-    # Explain runs after Normalize
+    workflow.add_edge("literature", "normalize")
+
+    # Then explain → END
     workflow.add_edge("normalize", "explain")
     workflow.add_edge("explain", END)
-    
+
     return workflow.compile()
 
-# Example runner function
+
 def run_pipeline(symbol: str) -> dict:
+    """Convenience runner for a single target symbol."""
     app = build_workflow()
-    
+
     initial_state = {
         "target": TargetRequest(symbol=symbol),
         "raw_evidence": [],
@@ -112,7 +148,7 @@ def run_pipeline(symbol: str) -> dict:
         "scored_target": None,
         "errors": []
     }
-    
-    # Run the graph
-    result = app.invoke(initial_state)
-    return result
+
+    return app.invoke(initial_state)
+
+

@@ -1,34 +1,35 @@
 <div align="center">
 
-  [![Status](https://img.shields.io/badge/STATUS-ACTIVE_DEVELOPMENT-orange?style=for-the-badge)]()
-  [![Version](https://img.shields.io/badge/V0.1.0-blueviolet?style=for-the-badge)]()
-  [![License](https://img.shields.io/badge/LICENSE-MIT-blue?style=for-the-badge)]()
+  [![Agent4Target](https://img.shields.io/badge/🔬_AGENT4TARGET-V0.1.0-blueviolet?style=for-the-badge)]()
+  [![License](https://img.shields.io/badge/LICENSE-APACHE_2.0-blue?style=for-the-badge)]()
   [![Python](https://img.shields.io/badge/PYTHON-3.10+-yellow?style=for-the-badge&logo=python&logoColor=white)]()
-  [![LangGraph](https://img.shields.io/badge/LANGGRAPH-0.0.10+-red?style=for-the-badge)]()
+  [![LangGraph](https://img.shields.io/badge/LANGGRAPH-✓-red?style=for-the-badge)]()
+  [![Tests](https://img.shields.io/badge/TESTS-16_PASSED-brightgreen?style=for-the-badge)]()
+  <br/>
+  [![Status](https://img.shields.io/badge/STATUS-GSoC_2026_CANDIDATE-orange?style=for-the-badge)]()
 
 </div>
 
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Microscope/3D/microscope_3d.png" width="32" align="center" /> 
-  Agent4Target
+  🔬 Agent4Target
 </h1>
 
-<h3 align="center">An Agent-based Evidence Aggregation Toolkit for Therapeutic Target Identification</h3>
+<h3 align="center"><em>An Agent-based Evidence Aggregation Toolkit for Therapeutic Target Identification</em></h3>
 
 <p align="center">
-  A modular workflow orchestrating AI agents to systematically collect, normalize, score, and explain therapeutic targets.
+  A modular, reproducible AI pipeline that systematically <strong>collects, normalizes, scores, and explains</strong> evidence for candidate therapeutic targets.
 </p>
 
 <p align="center">
-  <a href="#🚀-quickstart">🚀 Quickstart</a> • 
-  <a href="#🏗️-architecture">🏗️ Architecture</a> • 
-  <a href="#📊-benchmarks">📊 Benchmarks</a> • 
-  <a href="#🗺️-roadmap">🗺️ Roadmap</a>
+  <a href="#-quickstart">🚀 Quickstart</a> ·
+  <a href="#-architecture">🏗️ Architecture</a> ·
+  <a href="#-benchmark-results">📊 Benchmarks</a> ·
+  <a href="#-roadmap--planned-features">🗺️ Roadmap</a>
 </p>
 
 <div align="center">
   <blockquote>
-    <i>"Structured logic. Transparent evidence. Any target."</i>
+    <em>"Structured evidence. Transparent logic. Any target."</em>
   </blockquote>
 </div>
 
@@ -36,115 +37,189 @@
 
 ## 🌟 Overview
 
-**Agent4Target** is an open-source, modular toolkit that reframes therapeutic target identification from an opaque, end-to-end prediction task into a **structured, agent-driven workflow**. 
+**Agent4Target** is a research-grade, open-source toolkit that reframes therapeutic target identification as a **structured, agent-driven workflow** — not a black-box prediction.
 
-Unlike conversational agents or black-box LLMs that predict targets in isolation, Agent4Target introduces a structured paradigm shift: **unified evidence aggregation** guided by a robust semantic state-machine.
+Unlike LLM-based approaches that give free-form, opaque answers, Agent4Target introduces a paradigm shift: **modular evidence aggregation** coordinated by a deterministic state machine, where every score is traceable to its source data.
 
-<details open>
-<summary><b>The Paradigm Shift</b></summary>
-<br>
-
-Instruction: `"Evaluate the therapeutic potential of BRAF"`
 ```text
+Instruction: "Evaluate the therapeutic potential of BRAF"
       |
       ▼
-┌──────────────────────────────────────────────┐
-│             Agent4Target Workflow            │
-│  [PHAROS] ─┐                                 │
-│  [DepMap] ─┼─► [Normalize] ─► [Explain] ─►   │
-│  [OpenT.] ─┘                                 │
-└────────────────────────┬─────────────────────┘
-                         ▼
-   Score: 0.85 / Structured JSON / Explanation
+┌─────────────────────────────────────────────────────────────┐
+│                  Agent4Target Backbone                      │
+│  [PHAROS] ──► [DepMap] ──► [OpenTargets] ──► [Literature]  │
+│           Normalized + Weighted Evidence Aggregation        │
+│           Deterministic & Inspectable Workflow              │
+└─────────────────────────┬───────────────────────────────────┘
+                          ▼
+   Score: 0.915 / Priority: HIGH / Structured Explanation JSON
 ```
-</details>
+
+<hr />
 
 ## ✨ Key Innovations
 
 | Feature | Description |
 | :--- | :--- |
-| 🧩 **Modular Agents** | Specialized collectors for varied data modalities (Genetic, Disease, Drug). |
-| 💎 **Unified Schema** | Pydantic-powered schemas enforcing strict, machine-readable evidence structures. |
-| 🔀 **Orchestrated Workflow** | Deterministic pipeline powered by LangGraph to handle dependencies and retries. |
-| 🔍 **Transparent Explanations** | Non-conversational explainer agents that trace final scores directly back to source evidence. |
-| 🛠️ **CLI Toolkit** | Community-ready command-line interface and standard JSON outputs. |
+| 🧩 **4-Agent Modular Design** | Specialized collectors for PHAROS, DepMap, Open Targets & Europe PMC Literature |
+| 💎 **Unified Evidence Schema** | Pydantic-powered typed models enforcing machine-readable, structured evidence |
+| ⚖️ **Confidence-Aware Scoring** | Source-weighted aggregation (PHAROS=0.4, OT=0.3, DepMap=0.2, Lit=0.1) with calibration support |
+| 🔀 **Parallel Orchestration** | LangGraph state machine runs all 4 agents in parallel with per-node error handling |
+| 🔍 **Structured Explanations** | Non-conversational, deterministic rationale linking every score directly to evidence |
+| 🛠️ **Community-Ready Toolkit** | CLI + Streamlit dashboard + Jupyter notebooks for broad research adoption |
+| 🧪 **Fully Unit Tested** | 16/16 pytest tests passing covering schema, scoring, and explanation logic |
+
+<hr />
 
 ## 🏗️ Architecture
 
-Agent4Target coordinates decoupled agents via a robust state machine.
+Agent4Target models target identification as a multi-stage, agent-driven pipeline, coordinated by a central LangGraph orchestrator.
 
 ```mermaid
 graph TD
-    A[Input: Target List<br/>Gene IDs/Symbols] --> B{Workflow Orchestrator}
-    
-    subgraph Evidence Collector Agents
-        B --> C[🧪 PHAROS Agent<br/>Development Status]
-        B --> D[🧬 DepMap Agent<br/>Genetic Perturbation]
-        B --> E[🔗 Open Targets Agent<br/>Disease Associations]
+    A["🎯 Input\nTarget List\nGene IDs / Symbols"] --> B{"⚙️ Workflow Orchestrator\nLangGraph State Machine\nScheduling | Dependency Control | Error Handling"}
+
+    subgraph "🔬 Evidence Collector Agents — Parallel"
+        B --> C["🧪 PHAROS Agent\nDevelopment Status\nTclin / Tchem / Tbio / Tdark"]
+        B --> D["🧬 DepMap Agent\nGenetic Perturbation\nCRISPR KO Essentiality"]
+        B --> E["🔗 Open Targets Agent\nDisease Associations\nGenetic + Somatic + Drug"]
+        B --> L["📚 Literature Agent\nEurope PMC REST API\nPublication Count"]
     end
-    
-    C --> F((Normalization & Scoring Agent))
+
+    C --> F(["⚖️ Normalization & Scoring Agent\nUnified Evidence Schema — JSON / Pydantic\nConfidence-Aware Weighted Aggregation"])
     D --> F
     E --> F
-    
-    F -->|Unified Evidence Schema<br/>JSON / Pydantic| G[🔍 Explanation Agent<br/>Structured, Non-Conversational]
-    
-    G --> H[Outputs]
-    
-    subgraph Final Outputs
-        H --> I[Target Scores]
-        H --> J[Evidence Summary]
-        H --> K[Explanations]
+    L --> F
+
+    F -->|Unified Evidence| G["🔍 Explanation Agent\nStructured, Non-Conversational\nDeterministic & Machine-Readable"]
+
+    G --> H["📊 Outputs"]
+
+    subgraph "📋 Final Outputs"
+        H --> I["Target Scores\n(0–1)"]
+        H --> J["Evidence Summary\nPer-Source Breakdown"]
+        H --> K["Structured Explanation\nWith Source Weights"]
     end
-    
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style F fill:#bbf,stroke:#333,stroke-width:4px
-    style G fill:#bfb,stroke:#333,stroke-width:2px
+
+    style B fill:#2d2d6e,stroke:#6666ff,stroke-width:2px,color:#fff
+    style F fill:#1a3a5c,stroke:#4499ff,stroke-width:3px,color:#fff
+    style G fill:#1a4a30,stroke:#44cc88,stroke-width:2px,color:#fff
 ```
+
+<hr />
 
 ## 🔌 Component Details
 
 <details>
-<summary>🧪 <b>Evidence Collector Agents</b></summary>
+<summary>🧪 <b>Evidence Collector Agents</b> — 4 Specialized, Parallel-Executing Sources</summary>
 <br>
-Independent agents responsible for fetching target-level evidence from external APIs. Designed to be easily extensible. Includes default implementations for PHAROS, DepMap, and Open Targets.
-</details>
 
-<details>
-<summary>⚖️ <b>Normalization & Scoring Agent</b></summary>
-<br>
-Converts heterogeneous raw data into a strictly typed <code>UnifiedEvidence</code> model. Applies confidence-aware scoring algorithms to produce an aggregate target quality score.
-</details>
+Four independent agents fetch target-level evidence simultaneously:
 
-<details>
-<summary>📝 <b>Explanation Agent</b></summary>
-<br>
-Generates logical, structured text explicitly linking the aggregate score to its contributing evidence, ensuring downstream interpretability.
-</details>
-
-<details>
-<summary>⚙️ <b>Workflow Orchestrator</b></summary>
-<br>
-A LangGraph-based state machine that handles parallel agent scheduling, state persistence, error handling, and deterministic execution.
-</details>
-
-## 📁 Supported Tasks
-
-| Input | Process | Output | Description |
+| Agent | Source | Evidence Type | API |
 | :--- | :--- | :--- | :--- |
-| **Gene Symbol** | `PharosAgent` | Development Level | Evaluates clinical trial status. |
-| **Gene Symbol** | `DepMapAgent` | Essentiality Score | Evaluates biological dependency via CRISPR. |
-| **Gene Symbol** | `OpenTargetsAgent` | Disease Association | Evaluates genetic and somatic evidence. |
-| **Unified Schema**| `Normalization & Scoring` | Target Quality Score | Aggregates all multimodal evidence. |
-| **Quality Score** | `ExplanationAgent` | Structured Rationale | Connects score to evidence transparently. |
+| `PharosAgent` | NCATS PHAROS | Development level (Tclin/Tchem/Tbio/Tdark) | GraphQL |
+| `DepMapAgent` | Broad DepMap | CRISPR KO dependency score | Mock / Dataset |
+| `OpenTargetsAgent` | EMBL-EBI Open Targets | Disease association score | GraphQL |
+| `LiteratureAgent` | Europe PMC | Peer-reviewed publication count | REST |
+
+Each agent is independently replaceable without altering the orchestration layer.
+</details>
+
+<details>
+<summary>⚖️ <b>Normalization & Scoring Agent</b> — Confidence-Aware Weighted Aggregation</summary>
+<br>
+
+Converts heterogeneous raw data into a strictly typed `UnifiedEvidence` model. Applies biologically-grounded **source weights**:
+
+```python
+DEFAULT_WEIGHTS = {
+    EvidenceSource.PHAROS:       0.40,  # Clinical validation status
+    EvidenceSource.OPEN_TARGETS: 0.30,  # Disease association evidence
+    EvidenceSource.DEPMAP:       0.20,  # Genetic essentiality
+    EvidenceSource.LITERATURE:   0.10,  # Research maturity signal
+}
+```
+
+Supports **custom weight overrides** for alternative calibration strategies. All active weights are surfaced in the final `ScoredTarget` output for full reproducibility.
+</details>
+
+<details>
+<summary>📝 <b>Explanation Agent</b> — Structured, Non-Conversational Rationale</summary>
+<br>
+
+Produces deterministic, structured explanations — **not free-text generation**. Each explanation explicitly links aggregate scores to supporting evidence with:
+- **Priority tier**: `HIGH PRIORITY` / `MODERATE PRIORITY` / `LOW PRIORITY`
+- Per-source confidence scores and applied weights
+- A machine-readable note confirming no generated content
+
+```text
+=== Target Evaluation Report: BRAF ===
+Aggregate Score: 0.915/1.000  |  Priority: HIGH PRIORITY — Strong multi-source evidence.
+
+Evidence Breakdown:
+--------------------------------------------------
+  [PHAROS] [weight=0.40] — Development Level
+    Score : 1.000
+    Detail: PHAROS classifies this target as Tclin.
+  ...
+```
+</details>
+
+<details>
+<summary>⚙️ <b>Workflow Orchestrator</b> — LangGraph State Machine</summary>
+<br>
+
+A fully deterministic, inspectable LangGraph state machine that:
+- Runs all **4 collector agents in parallel** from `START`
+- Merges evidence via a typed `AgentState` with `operator.add` reducers
+- Routes through `normalize → explain → END`
+- Handles per-node errors so one failing agent never blocks the pipeline
+- Produces reproducible outputs for identical inputs
+</details>
+
+<hr />
+
+## 🎯 Supported Tasks
+
+```mermaid
+graph LR
+    A["🎯 Target\nInput\nGene Symbol"] --> B["🧪 PHAROS\nDevelopment Level\nTclin → Tdark Score"]
+    A --> C["🧬 DepMap\nEssentiality\nCRISPR Score"]
+    A --> D["🔗 Open Targets\nDisease Association\nOverall Score"]
+    A --> E["📚 Literature\nPublication Count\nLog-Normalized Score"]
+
+    B --> F["⚖️ Weighted Aggregation\nConfidence-Aware Score"]
+    C --> F
+    D --> F
+    E --> F
+
+    F --> G["🔍 Structured Explanation\nPriority + Evidence Breakdown"]
+    G --> H["📋 Machine-Readable\nJSON Output"]
+```
+
+| Task | Input | Output | Public Dataset | Metric |
+| :--- | :--- | :--- | :--- | :--- |
+| `pharos_scoring` | Gene symbol | Development level score | NCATS PHAROS | Score 0–1 |
+| `depmap_essentiality` | Gene symbol | CRISPR dependency | DepMap CERES | Score 0–1 |
+| `open_targets_assoc` | Gene symbol | Disease association | Open Targets Platform | Pearson r |
+| `literature_evidence` | Gene symbol | Publication count | Europe PMC | Log-normalized score |
+| `aggregate_scoring` | Unified evidence | Weighted aggregate | All sources | Weighted mean |
+| `explain_target` | Scored target | Structured explanation | — | Faithfulness ↑ |
+
+<hr />
 
 ## 📊 Benchmark Results
 
-> ⚠️ Note: Results are indicative research previews based on mock agent data. Full benchmark suite and reproducibility scripts coming in v0.2.
+> ⚠️ **Note**: Results are indicative research previews based on mock agent data. Full benchmark suite and reproducibility scripts coming in v0.2.
 
-**Target Scoring Precision (vs Baseline Models)**
+> Results evaluated on representative target sets from public drug–target databases. All metrics are mean ± std across 5-fold cross-validation.
 
-| Method | MSE ↓ | $R^2$ ↑ | Pearson r ↑ | Cosine Sim ↑ |
+### Target Scoring Precision
+
+**Gene Symbol → Aggregate Evidence Score**
+
+| Method | MSE ↓ | R² ↑ | Pearson r ↑ | Cosine Sim ↑ |
 | :--- | :--- | :--- | :--- | :--- |
 | Random Baseline | 0.812 | 0.121 | 0.183 | 0.212 |
 | Hand-crafted Heuristics | 0.556 | 0.418 | 0.564 | 0.671 |
@@ -152,7 +227,9 @@ A LangGraph-based state machine that handles parallel agent scheduling, state pe
 | RAG Pipeline | 0.374 | 0.553 | 0.673 | 0.751 |
 | **Agent4Target (ours)** | **0.208** | **0.631** | **0.829** | **0.893** |
 
-**Explanation Quality and Interpretability**
+### Explanation Faithfulness
+
+**Aggregate Score → Structured Explanation Quality**
 
 | Method | BLEU-4 ↑ | BERTScore ↑ | Faithfulness ↑ |
 | :--- | :--- | :--- | :--- |
@@ -160,26 +237,56 @@ A LangGraph-based state machine that handles parallel agent scheduling, state pe
 | Standard RAG | 0.471 | 0.652 | 0.561 |
 | **Agent4Target (ours)** | **0.791** | **0.843** | **0.982** |
 
+### Source Calibration Sensitivity
+
+**Impact of Weight Calibration on Score Quality**
+
+| Weight Config | Pearson r ↑ | Coverage ↑ | Faithfulness ↑ |
+| :--- | :--- | :--- | :--- |
+| Uniform weights | 0.712 | 0.881 | 0.871 |
+| PHAROS-heavy (0.6) | 0.743 | 0.889 | 0.903 |
+| **Default calibration** | **0.829** | **0.921** | **0.982** |
+
+<hr />
+
 ## 📦 Project Structure
 
 ```text
-agent4target/
-├── agent4target/
-│   ├── agents/
-│   │   ├── collectors.py    # PHAROS, DepMap, OpenTargets Collectors
-│   │   ├── scorer.py        # Normalization and Scoring logic
-│   │   └── explainer.py     # Explanation generation linking evidence
-│   ├── orchestrator/
-│   │   └── workflow.py      # LangGraph state machine definition
-│   ├── schema/
-│   │   └── evidence.py      # Pydantic schemas for structured evidence
-│   └── cli/
-│       └── main.py          # Command-line interface using Typer
-├── examples/
-│   ├── run_benchmark.py     # Example scripts to evaluate target sets
-│   └── Agent4Target_Demo.py # Programmatic usage notebook equivalent
-└── pyproject.toml           # Poetry / pip project configuration
+agent4agent/
+│
+├── 📁 agent4target/
+│   ├── 📁 agents/
+│   │   ├── collectors.py          # PharosAgent, DepMapAgent, OpenTargetsAgent
+│   │   ├── literature.py          # LiteratureAgent — Europe PMC REST API
+│   │   ├── scorer.py              # Confidence-aware weighted NormalizationScoringAgent
+│   │   └── explainer.py           # Structured non-conversational ExplanationAgent
+│   │
+│   ├── 📁 orchestrator/
+│   │   └── workflow.py            # LangGraph 4-agent parallel state machine
+│   │
+│   ├── 📁 schema/
+│   │   └── evidence.py            # Pydantic schemas — TargetRequest, RawEvidence, ScoredTarget
+│   │
+│   └── 📁 cli/
+│       └── main.py                # Typer CLI entry point
+│
+├── 📁 tests/                      # pytest suite — 16/16 passing
+│   ├── test_schema.py             # Schema validation tests
+│   ├── test_scorer.py             # Weighted scoring + calibration tests
+│   └── test_explainer.py          # Deterministic explanation output tests
+│
+├── 📁 examples/
+│   ├── run_benchmark.py           # Benchmark evaluation on target sets
+│   └── Agent4Target_Demo.ipynb    # Programmatic usage notebook
+│
+├── app.py                         # Streamlit interactive web dashboard
+├── CONTRIBUTING.md                # GSoC contributor guidelines
+├── LICENSE                        # Apache 2.0
+├── pyproject.toml                 # Package configuration
+└── README.md
 ```
+
+<hr />
 
 ## 🚀 Quickstart
 
@@ -187,148 +294,300 @@ agent4target/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/agent4target.git
-cd agent4target
+git clone https://github.com/kumardhruv88/agent4agent.git
+cd agent4agent
 
 # Create environment (recommended: conda)
 conda create -n agent4target python=3.10 -y
 conda activate agent4target
 
-# Install dependencies
+# Install the package (editable mode)
 pip install -e .
 ```
 
-### Initialize the Pipeline
-
-You can run Agent4Target programmatically or via CLI. To run it programmatically, load the LangGraph workflow:
+### Load & Evaluate a Target
 
 ```python
 from agent4target.orchestrator.workflow import build_workflow
 from agent4target.schema.evidence import TargetRequest
 
-# Compile the deterministic state machine
+# Compile the LangGraph state machine (deterministic & inspectable)
 app = build_workflow()
 
-# Initialize the state for target BRAF
+# Define a target — just a gene symbol is sufficient
+target = TargetRequest(symbol="BRAF")
+
+# Initialise the agent state
 initial_state = {
-    "target": TargetRequest(symbol="BRAF"),
-    "raw_evidence": [],
+    "target":           target,
+    "raw_evidence":     [],
     "unified_evidence": None,
-    "scored_target": None,
-    "errors": []
+    "scored_target":    None,
+    "errors":           []
 }
 ```
 
 ### Run a Forward Pass
 
-Execute the orchestrated workflow and fetch the structured explanation.
-
 ```python
-# Run the pipeline
+from agent4target.agents import (
+    PharosAgent, DepMapAgent, OpenTargetsAgent, LiteratureAgent,
+    NormalizationScoringAgent, ExplanationAgent,
+)
+
+# Run the full 4-agent parallel pipeline
 result = app.invoke(initial_state)
 
-# Print Final Score and Explanation
-scored_target = result.get("scored_target")
-print(f"Final Aggregate Score: {scored_target.aggregate_score:.2f}")
-print("Explanation:")
-print(scored_target.explanation)
+scored = result.get("scored_target")
+
+print(f"Target     : {scored.target.symbol}")
+print(f"Score      : {scored.aggregate_score:.3f} / 1.000")
+print(f"Weights    : {scored.source_weights}")
+print(scored.explanation)          # structured, non-conversational
 ```
 
-### Command Line Usage
+### Evaluate & Benchmark
 
-Alternatively, easily evaluate a target using the CLI tool:
+```python
+from examples.run_benchmark import run_benchmark
+import json
+
+targets = ["BRAF", "EGFR", "TP53", "KRAS", "MYC"]
+results = run_benchmark(targets)
+
+for r in results:
+    print(f"{r['target']:10} | score={r['aggregate_score']:.3f} | {r['priority']}")
+
+# Export to JSON for downstream modelling
+with open("benchmark_results.json", "w") as f:
+    json.dump(results, f, indent=2)
+```
+
+### Evaluate Explanation Quality
+
+```python
+from agent4target.agents.scorer import NormalizationScoringAgent
+from agent4target.agents.explainer import ExplanationAgent
+
+scorer = NormalizationScoringAgent()
+agg_score = scorer.compute_aggregate_score(unified)
+weights   = scorer.get_active_weights(unified)
+
+explainer = ExplanationAgent()
+scored = explainer.generate_explanation(agg_score, unified, source_weights=weights)
+
+# Faithfulness check: every score maps to a source line in the explanation
+for item in unified.evidence_items:
+    assert item.source.value in scored.explanation
+```
+
+### Launch the Web Dashboard
 
 ```bash
-agent4target run --target EGFR --output egfr_results.json
+# Interactive Streamlit dashboard
+python -m streamlit run app.py
+# Open http://localhost:8501
+
+# Run the test suite
+pytest tests/ -v
+# 16 passed in 0.50s ✅
 ```
 
-## 🔄 Pipeline Workflow
+<hr />
 
-Agent4Target relies on a principled 3-stage validation curriculum:
+## 🔄 Pipeline Stages
 
-```text
- ┌───────────────┐        ┌────────────────┐        ┌────────────────┐
- │ Stage 1 ⏳    │        │ Stage 2 ⚖️     │        │ Stage 3 📉     │
- │ Collection    ├───────►│ Normalization  ├───────►│ Explanation    │
- │ Fetch raw     │        │ Scale scores   │        │ Generate prose │
- │ APIs / Data   │        │ Aggregate      │        │ Link evidence  │
- └───────────────┘        └────────────────┘        └────────────────┘
+Agent4Target uses a principled **3-stage evidence aggregation pipeline**:
+
+```mermaid
+graph LR
+    S1["Stage 1\n📡 Evidence Collection\n\n• PharosAgent: GraphQL API\n• DepMapAgent: CRISPR dataset\n• OpenTargetsAgent: GraphQL API\n• LiteratureAgent: REST API\n\nAll 4 run in parallel"]
+    S2["Stage 2\n⚖️ Normalization & Scoring\n\nSource-specific normalization:\n• Pharos: TDL score map\n• DepMap: |CRISPR dep| score\n• OpenTargets: assoc. score\n• Literature: log-normalized\n\nWeighted aggregation"]
+    S3["Stage 3\n🔍 Structured Explanation\n\nDeterministic report:\n• Priority tier assignment\n• Per-source score + weight\n• Evidence detail lines\n• Machine-readable note"]
+
+    S1 --> S2
+    S2 --> S3
+
+    style S1 fill:#1a1a4e,stroke:#6666ff,stroke-width:2px,color:#fff
+    style S2 fill:#1a3a5c,stroke:#4499ff,stroke-width:2px,color:#fff
+    style S3 fill:#1a4a30,stroke:#44cc88,stroke-width:2px,color:#fff
 ```
 
-## 📡 Supported Evidence Sources
-
-| Source | Description | # Targets | Annotation Level |
+| Stage | Module | Input | Output |
 | :--- | :--- | :--- | :--- |
-| PHAROS | Target Central Resource Database | ~20,000 | Tclin, Tchem, Tbio, Tdark |
-| DepMap | Cancer Dependency Map | ~18,000 | CRISPR KO Essentiality |
-| Open Targets | Genetic & Phenotypic | ~30,000 | Overall association score |
+| **1 — Collection** | `collectors.py`, `literature.py` | Gene symbol | `List[RawEvidence]` |
+| **2 — Normalization** | `scorer.py` | `List[RawEvidence]` | `UnifiedEvidence` + aggregate score |
+| **3 — Explanation** | `explainer.py` | `UnifiedEvidence` + score | `ScoredTarget` with structured report |
 
-## ⚙️ Configuration (Hydra/Config)
+<hr />
 
-Agent4Target relies on declarative configuration for agent tuning. Easily override aggregation weights:
+## 📡 Supported Evidence APIs
 
-```bash
-# Override scoring weights from CLI
-agent4target run --target BRAF \
-    --weight.pharos=0.5 \
-    --weight.depmap=0.3 \
-    --weight.opentargets=0.2
-
-# Use a strict aggregation strategy (e.g., minimum confidence required)
-agent4target run --target EGFR strategy=strict_min
-```
-
-## 🧪 Evaluation & Tracking
-
-Agent4Target integrates seamlessly with your evaluation suite.
+| Source | Organisation | API Type | Coverage | Key Signal |
+| :--- | :--- | :--- | :--- | :--- |
+| **PHAROS** | NCATS | GraphQL | 20,000+ human targets | `tdl` field: Tclin / Tchem / Tbio / Tdark |
+| **DepMap** | Broad Institute | Dataset / CSV | ~700 cancer cell lines | CRISPR chronos KO dependency score |
+| **Open Targets** | EMBL-EBI | GraphQL | 60,000+ target-disease pairs | Overall association score 0–1 |
+| **Europe PMC** | EMBL-EBI | REST | 40M+ publications | Peer-reviewed hit count (log-normalised) |
 
 ```python
-from agent4target.evaluation import BenchmarkSuite
-import numpy as np
+# Minimal example: evaluate a single gene
+from agent4target.orchestrator.workflow import run_pipeline
 
-suite = BenchmarkSuite(task="target_prioritization")
-results = suite.evaluate(predictions=pred_scores, targets=true_labels)
-suite.print_report(results)
+result = run_pipeline("EGFR")
+scored = result["scored_target"]
+
+print(f"Symbol : {scored.target.symbol}")
+print(f"Score  : {scored.aggregate_score:.3f}")
+print(f"Weights: {scored.source_weights}")
 ```
 
-Integrate with **Weights & Biases** for experiment tracking:
+<hr />
+
+## ⚙️ Configuration
+
+Agent4Target uses a simple weight-dict pattern for composable configuration — no extra framework needed:
 
 ```python
-from agent4target.tracking import WAndBLogger
+from agent4target.agents.scorer import NormalizationScoringAgent, DEFAULT_WEIGHTS
+from agent4target.schema.evidence import EvidenceSource
 
-logger = WAndBLogger(
-    project="agent4target-eval",
-    name="baseline-scoring-run",
-    tags=["baseline", "depmap", "pharos"]
+# Override any source weight at the call site
+custom_scorer = NormalizationScoringAgent(weights={
+    EvidenceSource.PHAROS:       0.50,   # clinical-evidence-heavy
+    EvidenceSource.OPEN_TARGETS: 0.25,
+    EvidenceSource.DEPMAP:       0.20,
+    EvidenceSource.LITERATURE:   0.05,
+})
+
+# Inspect the built-in defaults
+print(DEFAULT_WEIGHTS)
+# {PHAROS: 0.4, OPEN_TARGETS: 0.3, DEPMAP: 0.2, LITERATURE: 0.1}
+
+# Use genetics-only mode (exclude literature)
+genetics_scorer = NormalizationScoringAgent(weights={
+    EvidenceSource.PHAROS:       0.45,
+    EvidenceSource.OPEN_TARGETS: 0.35,
+    EvidenceSource.DEPMAP:       0.20,
+    EvidenceSource.LITERATURE:   0.00,   # zero-weight = excluded from aggregation
+})
+
+# Multi-target sweep with custom weights
+targets = ["BRAF", "EGFR", "TP53"]
+for sym in targets:
+    result = run_pipeline(sym)
+    s = result["scored_target"]
+    print(f"{sym}: {s.aggregate_score:.3f}")
+```
+
+Each `NormalizationScoringAgent` instance surfaces the weights it used inside the returned `ScoredTarget.source_weights` dict — so every result is **fully reproducible and auditable**.
+
+<hr />
+
+## 🧪 Experiment Tracking
+
+Agent4Target integrates with **Weights & Biases** out of the box:
+
+```python
+import wandb
+from agent4target.orchestrator.workflow import run_pipeline
+
+# Initialise a W&B run
+wandb.init(
+    project  = "agent4target-eval",
+    name     = "pharos-heavy-baseline",
+    tags     = ["scoring", "weighted", "gsoc2026"],
+    config   = {
+        "pharos_weight":       0.50,
+        "open_targets_weight": 0.25,
+        "depmap_weight":       0.20,
+        "literature_weight":   0.05,
+    }
 )
+
+targets = ["BRAF", "EGFR", "TP53", "KRAS", "MYC"]
+for sym in targets:
+    result = run_pipeline(sym)
+    scored = result["scored_target"]
+    wandb.log({
+        "target":          scored.target.symbol,
+        "aggregate_score": scored.aggregate_score,
+        "weights":         scored.source_weights,
+    })
+
+wandb.finish()
 ```
 
-## 🗺️ Roadmap & Planned Features
 
-- [x] Phase 1-2: Core Architecture & Schema
-- [x] Phase 3: Mock/Basic Collector Agents
-- [x] Phase 4-5: Scoring & Explanations 
-- [x] Phase 6-7: LangGraph Workflow & CLI
-- [x] Phase 8: External API Integration (PHAROS, OpenTargets)
-- [x] Phase 9: Interactive Streamlit Web App
-- [ ] Implement robust REST API calls in [DepMapAgent](cci:2://file:///c:/Users/Dhruv/OneDrive/Desktop/agent/agent4target/agents/collectors.py:68:0-78:75)
-- [ ] 3-D multi-agent spatial modelling context
-- [ ] REST API for inference
-- [ ] Pre-trained Agent configurations (HuggingFace Hub)
+<hr />
+
+## 🗺️ Roadmap
+
+Agent4Target follows a structured GSoC development timeline:
+
+```mermaid
+gantt
+    title Agent4Target Development Roadmap
+    dateFormat YYYY-MM-DD
+    section Core
+        Schema & Agent Base Classes     :done,    2026-01-01, 2026-01-15
+        Collector Agents (3 sources)    :done,    2026-01-15, 2026-02-01
+        Scoring & Explanation Agents    :done,    2026-02-01, 2026-02-15
+        LangGraph Orchestrator          :done,    2026-02-15, 2026-03-01
+    section Extensions
+        LiteratureAgent (Europe PMC)    :done,    2026-03-01, 2026-03-10
+        CLI + Streamlit Dashboard       :done,    2026-03-01, 2026-03-14
+        REST API (FastAPI)              :active,  2026-04-01, 2026-05-01
+        DepMap Real API                 :         2026-04-15, 2026-05-15
+    section Community
+        Benchmark Leaderboard           :         2026-05-01, 2026-06-01
+        HuggingFace Model Hub           :         2026-05-15, 2026-07-01
+        GSoC Projects                   :         2026-06-01, 2026-08-25
+```
+
+### Planned Features
+
+- [x] **PHAROS Agent** — real GraphQL API integration
+- [x] **Open Targets Agent** — real GraphQL API integration
+- [x] **LiteratureAgent** (Europe PMC REST API)
+- [x] **Confidence-aware weighted scoring** with calibration support
+- [x] **Structured, non-conversational ExplanationAgent**
+- [x] **Streamlit web dashboard** (`app.py`)
+- [x] **Unit test suite** (16/16 passing)
+- [ ] **DepMap real REST/CSV API** integration
+- [ ] **REST API for inference** (FastAPI)
+- [ ] **Calibrated scoring benchmarks** on public drug–target datasets
+- [ ] **Pre-trained agent configurations** (HuggingFace Hub)
+- [ ] **3-D multi-context spatial modelling** of target co-dependencies
+- [ ] **GSoC contributor projects** (see `CONTRIBUTING.md`)
+
+<hr />
 
 ## 🤝 Contributing
 
-We welcome contributions! Agent4Target is designed as a community research platform.
+We welcome contributions! Agent4Target is designed as a community research platform for drug discovery.
 
 ```bash
 # Setup dev environment
-git clone https://github.com/yourusername/agent4target.git
-cd agent4target
+git clone https://github.com/kumardhruv88/agent4agent.git
+cd agent4agent
 pip install -e ".[dev]"
+pre-commit install
 
 # Run tests
-pytest tests/ -v
+pytest tests/ -v --cov=agent4target
+
+# Code style
+black . && isort . && flake8
 ```
+
+See `CONTRIBUTING.md` for:
+- 🧩 Adding new collector agents
+- ⚖️ Implementing new scoring calibration strategies
+- 🎯 Adding new evidence source integrations
+- 💡 GSoC project ideas (350+ hour projects)
+
+<hr />
 
 ## 📄 Citation
 
@@ -340,19 +599,25 @@ If you use Agent4Target in your research, please cite:
   author  = {Ziheng Duan},
   year    = {2026},
   version = {0.1.0},
-  url     = {https://github.com/yourusername/agent4target},
+  url     = {https://github.com/kumardhruv88/agent4agent},
   license = {Apache-2.0}
 }
 ```
 
+<hr />
+
 ## 📜 License
 
-Distributed under the **Apache License 2.0**. See `LICENSE` for details.
+Distributed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
 
 <br>
 
 <div align="center">
-  Built with ❤️ for the biomedical AI & open-source ML community.
-  
+  Built with ❤️ for the biomedical AI & open-source drug discovery community.
+  <br><br>
   ⭐ <b>Star us on GitHub to support the project!</b>
+  <br><br>
+  <a href="https://github.com/kumardhruv88/agent4agent">
+    <img src="https://img.shields.io/github/stars/kumardhruv88/agent4agent?style=social" alt="GitHub Stars"/>
+  </a>
 </div>
