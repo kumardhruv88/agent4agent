@@ -77,17 +77,22 @@ class NormalizationScoringAgent:
 
     def _normalize_depmap(self, raw: RawEvidence) -> NormalizedEvidence:
         data = raw.raw_data
-        dep_score = data.get("crispr_dependency_score", 0.0)
+        dep_score = data.get("crispr_dependency_score")
         dependent_lines = data.get("dependent_cell_lines", 0)
 
-        # A more negative score implies higher essentiality/dependency
-        score = min(1.0, max(0.0, abs(dep_score) if dep_score < -0.5 else 0.2))
+        # Handle None score (gene not found in DepMap)
+        if dep_score is None:
+            score = 0.0
+            summary = f"Gene not found in DepMap dataset."
+        else:
+            score = min(1.0, max(0.0, abs(dep_score) if dep_score < -0.5 else 0.2))
+            summary = f"CRISPR dependency score is {dep_score} across {dependent_lines} cell lines."
 
         return NormalizedEvidence(
             source=EvidenceSource.DEPMAP,
             confidence_score=score,
             evidence_type="Genetic Dependency",
-            summary=f"CRISPR dependency score is {dep_score} across {dependent_lines} cell lines.",
+            summary=summary,
             metadata={"crispr_dependency_score": dep_score, "dependent_cell_lines": dependent_lines}
         )
 

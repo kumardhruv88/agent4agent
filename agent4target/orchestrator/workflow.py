@@ -73,11 +73,9 @@ def fetch_literature(state: AgentState):
 def normalize_and_score(state: AgentState):
     """Node: Normalize all collected evidence and compute a weighted aggregate score."""
     try:
-        if not state.get("raw_evidence"):
-            return {"errors": ["No raw evidence collected to normalize."]}
-
+        raw = list(state.get("raw_evidence", []))
         agent = NormalizationScoringAgent()
-        unified = agent.process(state["target"], list(state["raw_evidence"]))
+        unified = agent.process(state["target"], raw)
         return {"unified_evidence": unified}
     except Exception as e:
         return {"errors": [f"Scoring Error: {str(e)}"]}
@@ -87,14 +85,20 @@ def explain_results(state: AgentState):
     """Node: Generate a structured, deterministic explanation of the final score."""
     try:
         unified = state.get("unified_evidence")
+        target = state["target"]
+
+        # If no unified evidence at all, build a zero-score fallback
         if not unified:
-            return {"errors": ["No unified evidence available to explain."]}
+            from agent4target.schema.evidence import UnifiedEvidence
+            unified = UnifiedEvidence(target=target, evidence_items=[])
 
         scorer = NormalizationScoringAgent()
         score = scorer.compute_aggregate_score(unified)
         weights = scorer.get_active_weights(unified)
 
-        scored_target = ExplanationAgent().generate_explanation(score, unified, source_weights=weights)
+        scored_target = ExplanationAgent().generate_explanation(    
+            score, unified, source_weights=weights
+        )
         return {"scored_target": scored_target}
     except Exception as e:
         return {"errors": [f"Explanation Error: {str(e)}"]}
