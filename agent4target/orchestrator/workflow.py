@@ -19,6 +19,9 @@ from agent4target.agents import (
     ExplanationAgent
 )
 
+# Load DepMap once at module level — avoids reloading 432MB CSV on every pipeline call
+_depmap_agent = DepMapAgent(csv_path="data/depmap/CRISPRGeneEffect.csv")
+
 # ─── State Definition ────────────────────────────────────────────────────────
 
 class AgentState(TypedDict):
@@ -29,7 +32,7 @@ class AgentState(TypedDict):
     errors: Annotated[Sequence[str], operator.add]
 
 
-# ─── Node Functions (each is an isolated, inspectable unit) ──────────────────
+# ─── Node Functions ──────────────────────────────────────────────────────────
 
 def fetch_pharos(state: AgentState):
     """Node: Retrieve target development level from PHAROS GraphQL API."""
@@ -43,7 +46,7 @@ def fetch_pharos(state: AgentState):
 def fetch_depmap(state: AgentState):
     """Node: Retrieve genetic dependency data from DepMap."""
     try:
-        evidence = DepMapAgent(csv_path="data/depmap/CRISPRGeneEffect.csv").fetch_evidence(state["target"])
+        evidence = _depmap_agent.fetch_evidence(state["target"])
         return {"raw_evidence": [evidence]}
     except Exception as e:
         return {"errors": [f"DepMap Error: {str(e)}"]}
@@ -110,7 +113,6 @@ def build_workflow() -> StateGraph:
     """
     workflow = StateGraph(AgentState)
 
-    # Register nodes
     workflow.add_node("pharos", fetch_pharos)
     workflow.add_node("depmap", fetch_depmap)
     workflow.add_node("open_targets", fetch_open_targets)
@@ -118,19 +120,16 @@ def build_workflow() -> StateGraph:
     workflow.add_node("normalize", normalize_and_score)
     workflow.add_node("explain", explain_results)
 
-    # 4 collectors run in parallel from START
     workflow.add_edge(START, "pharos")
     workflow.add_edge(START, "depmap")
     workflow.add_edge(START, "open_targets")
     workflow.add_edge(START, "literature")
 
-    # All collectors feed into normalize
     workflow.add_edge("pharos", "normalize")
     workflow.add_edge("depmap", "normalize")
     workflow.add_edge("open_targets", "normalize")
     workflow.add_edge("literature", "normalize")
 
-    # Then explain → END
     workflow.add_edge("normalize", "explain")
     workflow.add_edge("explain", END)
 
@@ -150,5 +149,3 @@ def run_pipeline(symbol: str) -> dict:
     }
 
     return app.invoke(initial_state)
-
-
