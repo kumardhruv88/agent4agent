@@ -43,7 +43,7 @@ def fetch_pharos(state: AgentState):
 def fetch_depmap(state: AgentState):
     """Node: Retrieve genetic dependency data from DepMap."""
     try:
-        evidence = DepMapAgent().fetch_evidence(state["target"])
+        evidence = DepMapAgent(csv_path="data/depmap/CRISPRGeneEffect.csv").fetch_evidence(state["target"])
         return {"raw_evidence": [evidence]}
     except Exception as e:
         return {"errors": [f"DepMap Error: {str(e)}"]}
