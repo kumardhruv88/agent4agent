@@ -117,56 +117,98 @@ class OpenTargetsAgent(EvidenceCollector):
     def fetch_evidence(self, target: TargetRequest) -> RawEvidence:
         print(f"[{target.symbol}] Fetching from Open Targets API...")
         
-        query = """
+        # Step 1: Get Ensembl ID from gene symbol
+        search_query = """
         query searchTarget($queryString: String!) {
           search(queryString: $queryString, entityNames: ["target"], page: {index: 0, size: 1}) {
             hits {
-              id
-              entity
               object {
                 ... on Target {
                   id
                   approvedSymbol
-                  approvedName
-                  targetClass {
-                    label
-                  }
                 }
               }
             }
           }
         }
         """
-        variables = {"queryString": target.symbol}
         
         try:
-            with httpx.Client(timeout=10.0) as client:
+            with httpx.Client(timeout=15.0) as client:
+                # Step 1: resolve symbol → Ensembl ID
                 response = client.post(
-                    self.api_url, 
-                    json={"query": query, "variables": variables}
+                    self.api_url,
+                    json={"query": search_query, "variables": {"queryString": target.symbol}}
                 )
                 response.raise_for_status()
                 data = response.json()
                 
                 hits = data.get("data", {}).get("search", {}).get("hits", [])
-                
                 if not hits:
                     return RawEvidence(
-                        source=EvidenceSource.OPEN_TARGETS, 
+                        source=EvidenceSource.OPEN_TARGETS,
                         raw_data={"overall_association_score": 0.0, "error": "Target not found"}
                     )
                 
-                target_info = hits[0].get("object", {})
+                ensembl_id = hits[0]["object"]["id"]
+                approved_symbol = hits[0]["object"]["approvedSymbol"]
+                
+                # Step 2: fetch real overall association scores across all diseases
+                assoc_query = """
+                query targetAssociations($ensemblId: String!) {
+                  target(ensemblId: $ensemblId) {
+                    associatedDiseases(page: {index: 0, size: 10}) {
+                      count
+                      rows {
+                        score
+                        datatypeScores {
+                          id
+                          score
+                        }
+                      }
+                    }
+                  }
+                }
+                """
+                
+                response2 = client.post(
+                    self.api_url,
+                    json={"query": assoc_query, "variables": {"ensemblId": ensembl_id}}
+                )
+                response2.raise_for_status()
+                data2 = response2.json()
+                
+                assoc_data = data2.get("data", {}).get("target", {}).get("associatedDiseases", {})
+                rows = assoc_data.get("rows", [])
+                total_associations = assoc_data.get("count", 0)
+                
+                if not rows:
+                    overall_score = 0.0
+                    datatype_scores = {}
+                else:
+                    # Mean of top 10 association scores — reflects breadth of evidence
+                    scores = [r["score"] for r in rows if r.get("score") is not None]
+                    overall_score = round(sum(scores) / len(scores), 4) if scores else 0.0
+                    
+                    # Aggregate datatype scores across top associations
+                    datatype_totals = {}
+                    datatype_counts = {}
+                    for row in rows:
+                        for dt in row.get("datatypeScores", []):
+                            dt_id = dt["id"]
+                            datatype_totals[dt_id] = datatype_totals.get(dt_id, 0) + dt["score"]
+                            datatype_counts[dt_id] = datatype_counts.get(dt_id, 0) + 1
+                    datatype_scores = {
+                        k: round(datatype_totals[k] / datatype_counts[k], 4)
+                        for k in datatype_totals
+                    }
                 
                 raw_data = {
-                    "target": target_info.get("approvedSymbol"),
-                    "ensembl_id": target_info.get("id"),
-                    "overall_association_score": 0.85,
-                    "association_types": {
-                        "genetic_associations": 0.7,
-                        "somatic_mutations": 0.5,
-                        "drugs": 0.9,
-                    }
+                    "target": approved_symbol,
+                    "ensembl_id": ensembl_id,
+                    "overall_association_score": overall_score,
+                    "total_associated_diseases": total_associations,
+                    "datatype_scores": datatype_scores
                 }
                 
         except Exception as e:
